@@ -1,0 +1,51 @@
+name: CI — Monitoring Stack
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Validate docker-compose config
+        run: docker-compose config
+
+      - name: Validate Prometheus config
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+            prom/prometheus \
+            --config.file=/etc/prometheus/prometheus.yml \
+            --check-config
+
+      - name: Pull all images
+        run: docker-compose pull
+
+      - name: Start stack
+        run: docker-compose up -d
+
+      - name: Wait for services
+        run: sleep 15
+
+      - name: Check Prometheus health
+        run: |
+          curl -f http://localhost:9090/-/healthy || exit 1
+
+      - name: Check Grafana health
+        run: |
+          curl -f http://localhost:3000/api/health || exit 1
+
+      - name: Tear down
+        run: docker-compose down
