@@ -1,5 +1,7 @@
 # Dockerized Monitoring Stack
 
+![CI](https://github.com/abhishekms-dev/monitoring/actions/workflows/ci.yml/badge.svg)
+
 A production-style system monitoring stack using Prometheus, Grafana, and Node Exporter — fully containerized with Docker Compose.
 
 ## Stack
